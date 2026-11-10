@@ -14,7 +14,7 @@ Validation: `npx tsc --noEmit`. Production build: `npm run build`.
 ## Included
 
 - Responsive lime, ink, and ivory editorial homepage.
-- Original Rashi mandala, observatory illustration, and journal artwork.
+- Original twelve-house kundli hero, observatory illustration, and journal artwork.
 - Eight sample services priced at ₹200–₹499. No public astrologer profiles.
 - Four-step booking preview with an Asia/Kolkata calendar, sample slots, conditional birth details, and React Hook Form / Zod validation.
 - Demonstrations of successful, failed, pending, and cancelled checkout.
