@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./hero.css";
+import "./typography.css";
 
 export const metadata: Metadata = {
   title: "Vedā — The sky you were born under",

@@ -1,0 +1,16 @@
+node_modules
+backend
+.git
+.next
+.vinext
+.wrangler
+.sites-runtime
+.env*
+.dev.vars*
+docker.env
+dist
+outputs
+work
+examples
+*.tar.gz
+*.log

@@ -41,6 +41,7 @@
     "**/*.mts"
   ],
   "exclude": [
+    "backend",
     "node_modules",
     "examples",
     "dist",

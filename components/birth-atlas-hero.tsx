@@ -1,3 +1,5 @@
+import { translate, type Language } from '@/lib/language';
+
 const houses = [
   { x: 200, y: 107 },
   { x: 106, y: 58 },
@@ -13,18 +15,22 @@ const houses = [
   { x: 294, y: 58 },
 ];
 
-function KundliPlate() {
+function KundliPlate({ language }: { language: Language }) {
+  const t = translate(language);
   return (
     <figure className="atlas-plate">
       <div className="atlas-plate-header">
-        <span>FIG. 01</span>
+        <span>{t('FIG. 01', 'चित्र 01')}</span>
         <span lang="sa">जन्मपत्रिका</span>
-        <span>12 HOUSES</span>
+        <span>{t('12 HOUSES', '12 भाव')}</span>
       </div>
       <svg
         viewBox="0 0 400 400"
         role="img"
-        aria-label="Illustrative North Indian kundli layout. The twelve houses run counterclockwise from Lagna, the first house at the top."
+        aria-label={t(
+          'Illustrative North Indian kundli layout. The twelve houses run counterclockwise from Lagna, the first house at the top.',
+          'उत्तर भारतीय कुंडली का उदाहरण। ऊपर लग्न से शुरू होकर बारह भाव घड़ी की विपरीत दिशा में हैं।',
+        )}
       >
         <defs>
           <pattern id="kundli-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
@@ -46,40 +52,42 @@ function KundliPlate() {
             </text>
           ))}
         </g>
-        <text className="atlas-chart-lagna" x="200" y="133" textAnchor="middle" fill="var(--lime)">LAGNA</text>
+        <text className="atlas-chart-lagna" x="200" y="133" textAnchor="middle" fill="var(--lime)">{t('LAGNA', 'लग्न')}</text>
         <circle cx="200" cy="200" r="3" fill="currentColor" />
       </svg>
       <figcaption>
-        <span>NORTH INDIAN KUNDLI</span>
-        <span>HOUSE POSITIONS</span>
+        <span>{t('NORTH INDIAN KUNDLI', 'उत्तर भारतीय कुंडली')}</span>
+        <span>{t('HOUSE POSITIONS', 'भावों का क्रम')}</span>
       </figcaption>
     </figure>
   );
 }
 
-export function BirthAtlasHero({ onBook }: { onBook: () => void }) {
+export function BirthAtlasHero({ language, onBook }: { language: Language; onBook: () => void }) {
+  const t = translate(language);
   return (
     <section className="birth-atlas wrap" aria-labelledby="hero-title">
       <div className="atlas-index">
-        <span><span className="atlas-index-dot" aria-hidden="true" /> VEDIC ASTROLOGY STUDIO</span>
-        <span className="atlas-index-title">THE BIRTH ATLAS</span>
+        <span><span className="atlas-index-dot" aria-hidden="true" /> {t('VEDIC ASTROLOGY STUDIO', 'वैदिक ज्योतिष')}</span>
+        <span className="atlas-index-title">{t('THE BIRTH ATLAS', 'जन्म का आकाश')}</span>
         <span lang="sa">ज्योतिष</span>
       </div>
       <div className="atlas-composition">
         <h1 id="hero-title" className="atlas-title">
-          <span className="atlas-title-first">The sky</span>{' '}
-          <span className="atlas-title-last">you were <em>born under.</em></span>
+          <span className="atlas-title-first">{t('The sky', 'आपके जन्म के')}</span>{' '}
+          <span className="atlas-title-last">{t('you were', 'पल का')} <em>{t('born under.', 'आकाश।')}</em></span>
         </h1>
-        <KundliPlate />
+        <KundliPlate language={language} />
       </div>
       <div className="atlas-footer">
-        <p>Read your birth chart with a Vedic astrologer. Bring a question about work, relationships, or what comes next.</p>
+        <p>{t('Read your birth chart with a Vedic astrologer. Bring a question about work, relationships, or what comes next.',
+          'वैदिक ज्योतिषी के साथ अपनी जन्म कुंडली समझें। काम, रिश्तों या आगे की राह पर अपने सवाल लेकर आएँ।')}</p>
         <button className="atlas-book" onClick={onBook}>
-          <span><strong>Book a consultation</strong><small>Online sessions from ₹200</small></span>
+          <span><strong>{t('Book a consultation', 'परामर्श बुक करें')}</strong><small>{t('Online sessions from ₹200', 'ऑनलाइन परामर्श ₹200 से')}</small></span>
           <span className="atlas-book-arrow" aria-hidden="true">↗</span>
         </button>
         <a className="atlas-approach" href="#about">
-          Our approach <span aria-hidden="true">↓</span>
+          {t('Our approach', 'हमारा नज़रिया')} <span aria-hidden="true">↓</span>
         </a>
       </div>
     </section>
