@@ -1,0 +1,114 @@
+name: CI and deploy test site
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: veda_test
+          POSTGRES_USER: veda_ci
+          POSTGRES_PASSWORD: disposable-ci-password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U veda_ci -d veda_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+      - name: Install frontend
+        run: npm ci --no-audit
+      - name: Install backend
+        working-directory: backend
+        run: npm ci --no-audit
+      - name: Test backend with isolated PostgreSQL
+        working-directory: backend
+        env:
+          TEST_DATABASE_URL: postgresql://veda_ci:disposable-ci-password@127.0.0.1:5432/veda_test
+        run: npm test
+      - name: Compile backend
+        working-directory: backend
+        run: npm run build
+      - name: Build frontend for VPS
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: npm run build:vps
+      - name: Check deployment script
+        run: |
+          bash -n deploy/deploy-ip-test.sh
+          bash deploy/tests/deploy-ip-test.test.sh
+
+  deploy:
+    name: Deploy IP test site
+    needs: checks
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    concurrency:
+      group: astrosite-ip-test-deploy
+      cancel-in-progress: false
+    steps:
+      - name: Deploy tested commit over SSH
+        shell: bash
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOY_HOST"
+          test -n "$DEPLOY_USER"
+          test -n "$DEPLOY_SSH_KEY"
+          test -n "$DEPLOY_KNOWN_HOSTS"
+          [[ "$DEPLOY_SHA" =~ ^[a-f0-9]{40}$ ]]
+
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+          eval "$(ssh-agent -s)"
+          trap 'ssh-agent -k >/dev/null' EXIT
+          printf '%s\n' "$DEPLOY_SSH_KEY" | tr -d '\r' | ssh-add -
+
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=15 -o ServerAliveInterval=30 -o ServerAliveCountMax=20 \
+            "$DEPLOY_USER@$DEPLOY_HOST" bash -se -- "$DEPLOY_SHA" <<'REMOTE'
+          set -euo pipefail
+          target_sha="$1"
+          cd /opt/veda
+          # Protect the checkout throughout this SSH deployment.
+          exec 9>.git/astrosite-deploy.lock
+          flock -w 60 9
+          test -z "$(git status --porcelain)" || { echo 'Commit or save local server source changes before deploying.'; exit 1; }
+          git fetch origin main
+          if [ "$(git rev-parse origin/main)" != "$target_sha" ]; then
+            echo 'A newer main commit exists; skipping this superseded deployment.'
+            exit 0
+          fi
+          git switch main
+          git merge --ff-only "$target_sha"
+          test "$(git rev-parse HEAD)" = "$target_sha"
+          bash deploy/deploy-ip-test.sh "$target_sha"
+          REMOTE

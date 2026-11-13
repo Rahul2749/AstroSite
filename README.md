@@ -54,6 +54,7 @@ For the later HTTPS deployment, follow [VPS deployment preparation](deploy/READM
 - [Backend setup, architecture and API](backend/README.md)
 - [IP-and-port test deployment](deploy/IP_TEST_DEPLOYMENT.md)
 - [HTTPS VPS deployment](deploy/README.md)
+- [GitHub Actions CI/CD setup](deploy/CI_CD_SETUP.md)
 - [Design and project notes](PROJECT.md)
 - [Original Sites starter documentation](docs/SITES_STARTER.md)
 

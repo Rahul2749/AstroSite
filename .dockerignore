@@ -11,6 +11,7 @@ docker.env
 dist
 outputs
 work
+.deployment
 examples
 *.tar.gz
 *.log

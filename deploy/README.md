@@ -2,6 +2,8 @@
 
 For the initial domain-free test deployment, follow [IP and port testing](IP_TEST_DEPLOYMENT.md). It uses port 8080 for the website and a separate SSH tunnel for admin access. The steps below are for the later HTTPS deployment.
 
+For automatic testing and deployment after pushes to `main`, follow [CI/CD setup](CI_CD_SETUP.md).
+
 Prepared after reading `C:\Deployments\LawyerWebsite` as a reference. No SSH connection, DNS change, remote deployment or change to that site's files has been made.
 
 ## Isolation from the existing website

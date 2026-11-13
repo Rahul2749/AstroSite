@@ -46,6 +46,7 @@ docker.env
 /.codex/
 /outputs/
 /work/
+/.deployment/
 
 # OS metadata
 .DS_Store
